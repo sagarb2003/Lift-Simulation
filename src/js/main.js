@@ -92,10 +92,9 @@ const displayLifts = (liftCount) => {
     lift.style.left = `${100 + i * 100}px`;
     const currLiftState = {
       id: i,
-      isActive: false,
-    //   isBusy: false,
       currentFloor: 0,
       domElement: lift,
+      isActive: false,
       isMoving: false,
       movingTo: null,
     };
@@ -148,14 +147,17 @@ const openLiftDoors = (liftId) => {
     leftDoor.style.transition = `transform 2.5s`;
     rightDoor.style.transform = `translateX(100%)`;
     rightDoor.style.transition = `transform 2.5s`;
-  }, 2500);
+  }, 0);
+  lift.isActive=true;
   setTimeout(() => {
     leftDoor.style.transform = `translateX(0)`;
     leftDoor.style.transition = `transform 2.5s`;
     rightDoor.style.transform = `translateX(0)`;
     rightDoor.style.transition = `transform 2.5s`;
-    lift.isBusy = false;
-  }, 5000);
+  }, 2500);
+  setTimeout(()=>{
+    lift.isActive=false;
+  },5001)
 };
 
 const scheduleLift = () => {
@@ -165,7 +167,7 @@ const scheduleLift = () => {
   const nearestLift = liftsInfo.find(
     (lift) => lift.id === nearestLiftId
   );
-  if (!nearestLift) {
+  if (!nearestLift || nearestLift.isActive) {
     queue.unshift(pendingFloor);
     console.log("No Lift is currently Available");
     return;
