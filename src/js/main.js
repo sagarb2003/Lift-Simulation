@@ -94,6 +94,7 @@ const displayLifts = (liftCount) => {
     const currLiftState = {
       id: i,
       isActive: false,
+      isBusy: false, 
       currentFloor: 0,
       domElement: lift,
       isMoving: false,
@@ -108,28 +109,33 @@ const displayLifts = (liftCount) => {
   }
 };
 
-const buttonClickHandler=(event)=>{
-    const buttonId=event.target.id; // gives the id of button clicked
-    const floorNumber=Number(buttonId.charAt(buttonId.length-1)); // extracting the floorNumber from buttonId
-    
-    const notMovingLift=liftsInfo.find((lift)=> lift.currentFloor === floorNumber && lift.isMoving===false);
-    // console.log(notMovingLift);
-    if(notMovingLift){
-        openLiftDoors(notMovingLift.id);
-        return;
-    }
+const buttonClickHandler = (event) => {
+  const buttonId = event.target.id; 
+  const floorNumber = Number(buttonId.charAt(buttonId.length - 1)); 
 
-    const liftGoingToFloor=liftsInfo.find((lift)=> lift.movingTo===floorNumber && lift.isMoving===true);
-    if(liftGoingToFloor){
-        console.log("Lift is coming to your desired floor");
-    }
+  const notMovingLift = liftsInfo.find(
+    (lift) => lift.currentFloor === floorNumber && !lift.isMoving && !lift.isBusy
+  );
+  if (notMovingLift) {
+    openLiftDoors(notMovingLift.id);
+    return;
+  }
+
+  const liftGoingToFloor = liftsInfo.find(
+    (lift) => lift.movingTo === floorNumber && lift.isMoving
+  );
+  if (liftGoingToFloor) {
+    console.log("Lift is coming to your desired floor");
+  } else {
     queue.push(floorNumber);
-}
+  }
+};
 // console.log(queue);
 
 
 const openLiftDoors = (liftId) => {
   const lift = liftsInfo.find((lift) => lift.id === liftId);
+  lift.isBusy = true
 //   console.log(lift);
   
   const leftDoor = document.querySelector(`#left-door${liftId}`);
@@ -145,6 +151,7 @@ const openLiftDoors = (liftId) => {
     leftDoor.style.transition = `transform 2.5s`;
     rightDoor.style.transform = `translateX(0)`;
     rightDoor.style.transition = `transform 2.5s`;
+    lift.isBusy = false; 
   }, 5000);
 };
 
@@ -152,7 +159,7 @@ const scheduleLift=()=>{
     if(queue.length===0) return;
     const pendingFloor=queue.shift();
     const nearestLiftId=findNearestLift(pendingFloor);
-    const nearestLift=liftsInfo.find((lift)=> lift.id=== nearestLiftId);
+    const nearestLift=liftsInfo.find((lift)=> lift.id && !lift.isBusy & && !lift.isMoving)=== nearestLiftId);
     if(!nearestLift){
         queue.unshift(pendingFloor);
         console.log("No Lift is currently Available");
@@ -187,6 +194,7 @@ const moveLift=(source,destination,liftId)=>{
       liftInAction.currentFloor = destination;
       liftInAction.isMoving = false;
       liftInAction.movingTo = null;
+      liftInAction.isBusy = true; 
     }, time * 1000);
 
     liftInAction.isActive = true;
@@ -196,6 +204,7 @@ const moveLift=(source,destination,liftId)=>{
       leftDoor.style.transition = `transform 2.5s`;
       rightDoor.style.transform = `translateX(0)`;
       rightDoor.style.transition = `transform 2.5s`;
+      liftInAction.isBusy = false;
     }, time * 1000 + 2500);
     setTimeout(() => {
       liftInAction.isActive = false;
