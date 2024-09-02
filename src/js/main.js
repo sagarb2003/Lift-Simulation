@@ -111,11 +111,13 @@ const buttonClickHandler = (event) => {
   const buttonId = event.target.id;
 //   console.log(buttonId);
 
-  const floorNumber = Number(buttonId.charAt(buttonId.length - 1));
+  const floorNumber = parseInt(buttonId.replace("up", "").replace("down", ""));
+//   console.log(floorNumber);
+  
 
   const notMovingLift = liftsInfo.find(
     (lift) =>
-      lift.currentFloor === floorNumber && lift.isMoving===false
+      lift.currentFloor === floorNumber && lift.isMoving===false 
   );
 //   console.log(notMovingLift);
   
@@ -143,12 +145,12 @@ const openLiftDoors = (liftId) => {
   const leftDoor = document.querySelector(`#left-door${liftId}`);
   const rightDoor = document.querySelector(`#right-door${liftId}`);
   setTimeout(() => {
-    leftDoor.style.transform = `translateX(-100%)`;
-    leftDoor.style.transition = `transform 2.5s`;
-    rightDoor.style.transform = `translateX(100%)`;
-    rightDoor.style.transition = `transform 2.5s`;
-  }, 0);
-  lift.isActive=true;
+      leftDoor.style.transform = `translateX(-100%)`;
+      leftDoor.style.transition = `transform 2.5s`;
+      rightDoor.style.transform = `translateX(100%)`;
+      rightDoor.style.transition = `transform 2.5s`;
+    }, 0);
+    lift.isActive=true;
   setTimeout(() => {
     leftDoor.style.transform = `translateX(0)`;
     leftDoor.style.transition = `transform 2.5s`;
@@ -177,7 +179,7 @@ const scheduleLift = () => {
 
 const findNearestLift = (floorNumber) => {
   let nearestLiftDistance = floors.length;
-  let nearestLiftId = liftsInfo[0].id;
+  let nearestLiftId = null;
   for (let i = 0; i < liftsInfo.length; i++) {
     const lift = liftsInfo[i];
     if (
@@ -204,7 +206,6 @@ const moveLift = (source, destination, liftId) => {
     liftInAction.currentFloor = destination;
     liftInAction.isMoving = false;
     liftInAction.movingTo = null;
-    // liftInAction.isBusy = true;
   }, time * 1000);
 
   liftInAction.isActive = true;
@@ -214,7 +215,6 @@ const moveLift = (source, destination, liftId) => {
     leftDoor.style.transition = `transform 2.5s`;
     rightDoor.style.transform = `translateX(0)`;
     rightDoor.style.transition = `transform 2.5s`;
-    // liftInAction.isBusy = false;
   }, time * 1000 + 2500);
   setTimeout(() => {
     liftInAction.isActive = false;
