@@ -97,6 +97,7 @@ const displayLifts = (liftCount) => {
       isActive: false,
       isMoving: false,
       movingTo: null,
+      doorReopen: [],
     };
     floor0.appendChild(lift);
     liftsInfo.push(currLiftState);
@@ -109,27 +110,25 @@ const displayLifts = (liftCount) => {
 
 const buttonClickHandler = (event) => {
   const buttonId = event.target.id;
-//   console.log(buttonId);
+  //   console.log(buttonId);
 
   const floorNumber = parseInt(buttonId.replace("up", "").replace("down", ""));
-//   console.log(floorNumber);
-  
+  //   console.log(floorNumber);
 
   const notMovingLift = liftsInfo.find(
-    (lift) =>
-      lift.currentFloor === floorNumber && lift.isMoving===false 
+    (lift) => lift.currentFloor === floorNumber && lift.isMoving === false
   );
-//   console.log(notMovingLift);
-  
+  //   console.log(notMovingLift);
+
   if (notMovingLift) {
     openLiftDoors(notMovingLift.id);
     return;
   }
 
   const liftGoingToFloor = liftsInfo.find(
-    (lift) => lift.movingTo === floorNumber && lift.isMoving 
+    (lift) => lift.movingTo === floorNumber && lift.isMoving
   );
-  if (liftGoingToFloor){
+  if (liftGoingToFloor) {
     console.log("Lift is coming to your desired floor");
     return;
   }
@@ -139,36 +138,35 @@ const buttonClickHandler = (event) => {
 
 const openLiftDoors = (liftId) => {
   const lift = liftsInfo.find((lift) => lift.id === liftId);
-//   lift.isBusy = true;
-    // console.log("Open Door",lift);
-
+  //   lift.isBusy = true;
+  // console.log("Open Door",lift);
+  lift.doorReopen.push(1);
   const leftDoor = document.querySelector(`#left-door${liftId}`);
   const rightDoor = document.querySelector(`#right-door${liftId}`);
   setTimeout(() => {
-      leftDoor.style.transform = `translateX(-100%)`;
-      leftDoor.style.transition = `transform 2.5s`;
-      rightDoor.style.transform = `translateX(100%)`;
-      rightDoor.style.transition = `transform 2.5s`;
-    }, 0);
-    lift.isActive=true;
+    leftDoor.style.transform = `translateX(-100%)`;
+    leftDoor.style.transition = `transform 2.5s`;
+    rightDoor.style.transform = `translateX(100%)`;
+    rightDoor.style.transition = `transform 2.5s`;
+  }, 0);
+  lift.isActive = true;
   setTimeout(() => {
     leftDoor.style.transform = `translateX(0)`;
     leftDoor.style.transition = `transform 2.5s`;
     rightDoor.style.transform = `translateX(0)`;
     rightDoor.style.transition = `transform 2.5s`;
   }, 2500);
-  setTimeout(()=>{
-    lift.isActive=false;
-  },5001)
+  setTimeout(() => {
+    lift.doorReopen.pop();
+    if(lift.doorReopen.length === 0) lift.isActive = false;
+  }, 5001);
 };
 
 const scheduleLift = () => {
   if (queue.length === 0) return;
   const pendingFloor = queue.shift();
   const nearestLiftId = findNearestLift(pendingFloor);
-  const nearestLift = liftsInfo.find(
-    (lift) => lift.id === nearestLiftId
-  );
+  const nearestLift = liftsInfo.find((lift) => lift.id === nearestLiftId);
   if (!nearestLift || nearestLift.isActive) {
     queue.unshift(pendingFloor);
     console.log("No Lift is currently Available");
@@ -217,8 +215,8 @@ const moveLift = (source, destination, liftId) => {
     rightDoor.style.transition = `transform 2.5s`;
   }, time * 1000 + 2500);
   setTimeout(() => {
-    liftInAction.isActive = false;
-  }, time * 1000 + 5000);
+    if (lift.doorReopen.length === 0) liftInAction.isActive = false;
+  }, time * 1000 + 5001);
   liftInAction.isMoving = true;
   liftInAction.movingTo = destination;
   liftInAction.domElement.style.transform = `translateY(-${
