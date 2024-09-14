@@ -97,7 +97,7 @@ const displayLifts = (liftCount) => {
       isActive: false,
       isMoving: false,
       movingTo: null,
-      doorReopen: [],
+      isDoorInMotion :false
     };
     floor0.appendChild(lift);
     liftsInfo.push(currLiftState);
@@ -140,7 +140,14 @@ const openLiftDoors = (liftId) => {
   const lift = liftsInfo.find((lift) => lift.id === liftId);
   //   lift.isBusy = true;
   // console.log("Open Door",lift);
-  lift.doorReopen.push(1);
+  // lift.doorReopen.push(1);
+  if (lift.isDoorInMotion || lift.isActive) {
+    console.log(
+      "Lift door is in motion or lift is active, cannot reopen doors."
+    );
+    return;
+  }
+  lift.isDoorInMotion = true;
   const leftDoor = document.querySelector(`#left-door${liftId}`);
   const rightDoor = document.querySelector(`#right-door${liftId}`);
   setTimeout(() => {
@@ -157,8 +164,10 @@ const openLiftDoors = (liftId) => {
     rightDoor.style.transition = `transform 2.5s`;
   }, 2500);
   setTimeout(() => {
-    lift.doorReopen.pop();
-    if(lift.doorReopen.length === 0) lift.isActive = false;
+    // lift.doorReopen.pop();
+    lift.isActive = false;
+    lift.isDoorInMotion = false;
+    // if(lift.doorReopen.length === 0) lift.isActive = false;
   }, 5001);
 };
 
@@ -215,7 +224,8 @@ const moveLift = (source, destination, liftId) => {
     rightDoor.style.transition = `transform 2.5s`;
   }, time * 1000 + 2500);
   setTimeout(() => {
-    if (lift.doorReopen.length === 0) liftInAction.isActive = false;
+    liftInAction.isActive = false;
+    // if (lift.doorReopen.length === 0) liftInAction.isActive = false;
   }, time * 1000 + 5001);
   liftInAction.isMoving = true;
   liftInAction.movingTo = destination;
